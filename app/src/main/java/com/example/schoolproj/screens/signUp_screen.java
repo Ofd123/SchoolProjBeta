@@ -1,0 +1,139 @@
+package com.example.schoolproj.screens;
+
+import static com.example.schoolproj.FireBaseFiles.FBRef.refAuth;
+
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.schoolproj.MainActivity;
+import com.example.schoolproj.MasterActivity;
+import com.example.schoolproj.R;
+import com.example.schoolproj.classes.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseNetworkException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
+import com.google.firebase.auth.FirebaseUser;
+
+public class signUp_screen extends MasterActivity {
+    EditText nameED, emailED, passwordED;
+    String userName, email, password;
+    Boolean rememberMe, termsOfSrvice;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_signup_screen);
+    }
+
+    public Boolean connect() {
+        ProgressDialog progressDialog = new ProgressDialog(signUp_screen.this);
+        progressDialog.setTitle("creating user");
+        progressDialog.setMessage("please wait...");
+        progressDialog.show();
+        final Boolean[] success = {false};
+        refAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                progressDialog.dismiss();
+                if (task.isSuccessful()) {
+                    Log.i("MainActivity", "createUserWithEmailAndPassword:success");
+                    FirebaseUser user = refAuth.getCurrentUser();
+                    connectedUser = new User(user.getUid(), userName);
+                    Toast.makeText(signUp_screen.this, "User created successfully.", Toast.LENGTH_SHORT).show();
+                    success[0] = true;
+                } else {
+                    Exception exp = task.getException();
+                    if (exp instanceof FirebaseAuthInvalidUserException) {
+                        Toast.makeText(signUp_screen.this, "Invalid email address.", Toast.LENGTH_SHORT).show();
+                    } else if (exp instanceof FirebaseAuthWeakPasswordException) {
+                        Toast.makeText(signUp_screen.this, "Password is too weak", Toast.LENGTH_SHORT).show();
+                    } else if (exp instanceof FirebaseAuthUserCollisionException) {
+                        Toast.makeText(signUp_screen.this, "User already exists.", Toast.LENGTH_SHORT).show();
+
+                    } else if (exp instanceof FirebaseAuthInvalidCredentialsException) {
+                        Toast.makeText(signUp_screen.this, "General authentication failure.", Toast.LENGTH_SHORT).show();
+                    } else if (exp instanceof FirebaseNetworkException) {
+                        Toast.makeText(signUp_screen.this, "Network error. Please check your connection.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(signUp_screen.this, "An error occurred. Please try again later.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+
+        if (success[0]) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void onRememberMeClicked(View view) {
+        if (rememberMe) {
+            rememberMe = false;
+        } else {
+            rememberMe = true;
+        }
+    }
+
+    public void onCheckboxClicked(View view) {
+        if (termsOfSrvice) {
+            termsOfSrvice = false;
+        } else {
+            termsOfSrvice = true;
+        }
+
+    }
+
+    public void signUp(View view) {
+        if (termsOfSrvice)
+        {
+            userName = nameED.getText().toString();
+            email = emailED.getText().toString();
+            password = passwordED.getText().toString();
+            if (userName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "please fill all the fields", Toast.LENGTH_SHORT).show();
+            }
+            if (connect())
+            {
+                if (rememberMe)
+                {
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putBoolean("rememberMe", rememberMe);
+                    editor.putString("userID", connectedUser.getUserID());
+                    editor.putString("username", connectedUser.getUsername());
+                    editor.putLong("lastLogin", connectedUser.getLastLogin());
+                    editor.putLong("creationDate", connectedUser.getCreationDate());
+                    editor.apply();
+                }
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+
+            }
+        }
+
+    }
+
+
+    public void logIn(View view)
+    {
+        Intent intent = new Intent(this, login_screen.class);
+        startActivity(intent);
+    }
+}
