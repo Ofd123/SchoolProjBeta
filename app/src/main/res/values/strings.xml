@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SchoolProj</string>
+    <string name="already_have_an_account">already have an account?</string>
 </resources>

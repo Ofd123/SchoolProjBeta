@@ -1,26 +1,134 @@
 package com.example.schoolproj.screens;
 
+import static com.example.schoolproj.FireBaseFiles.FBRef.refAuth;
+
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
+import android.util.Log;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import com.example.schoolproj.MasterActivity;
 import com.example.schoolproj.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseNetworkException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.auth.FirebaseUser;
 
-public class login_screen extends AppCompatActivity {
+public class login_screen extends MasterActivity {
+
+    Intent loginIntent;
+    String userName, password;
+    EditText emailED, passwordED;
+    CheckBox rememberMeCB; // It's better to use a CheckBox for this
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login_screen);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        loginIntent = getIntent();
+
+        emailED = findViewById(R.id.emailED); // Assuming you have an EditText for email
+        passwordED = findViewById(R.id.passwordED);
+        rememberMeCB = findViewById(R.id.rememberMeChecked); // Assuming you have a CheckBox
+
+    }
+
+    public void logIn(View view)
+    {
+        String email = emailED.getText().toString().trim();
+        String password = passwordED.getText().toString().trim();
+
+        if (email.isEmpty() || password.isEmpty())
+        {
+            Toast.makeText(this, "Please fill all the fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Logging In");
+        progressDialog.setMessage("Please wait...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        refAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task)
+                    {
+                        progressDialog.dismiss(); // Hide the loading dialog
+                        if (task.isSuccessful())
+                        {
+                            // Firebase login was successful
+                            Log.d("LOGIN_SUCCESS", "signInWithEmail:success");
+                            FirebaseUser fbUser = refAuth.getCurrentUser();
+                            onLoginSuccess(fbUser);
+                        }
+                        else
+                        {
+                            // Firebase login failed, show a specific error message
+                            Log.w("LOGIN_FAILURE", "signInWithEmail:failure", task.getException());
+                            handleLoginFailure(task.getException());
+                        }
+                    }
+                });
+    }
+    private void onLoginSuccess(FirebaseUser fbUser) {
+
+        if (rememberMeCB.isChecked())
+        {
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("stayConnected", true);
+            editor.putString("userID", fbUser.getUid());
+
+            String username = fbUser.getEmail() != null ? fbUser.getEmail().split("@")[0] : "User";
+            editor.putString("username", username);
+            editor.putLong("lastLogin", System.currentTimeMillis());
+            editor.apply();
+        }
+
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("state", hubCodes.REMEMBER_ME.ordinal());
+        setResult(Activity.RESULT_OK, resultIntent);
+        finish();
+    }
+
+    private void handleLoginFailure(Exception exception)
+    {
+        String errorMessage;
+        if (exception instanceof FirebaseAuthInvalidUserException)
+        {
+            errorMessage = "No account found with this email.";
+        }
+        else if (exception instanceof FirebaseAuthInvalidCredentialsException)
+        {
+            errorMessage = "Incorrect password. Please try again.";
+        }
+        else if (exception instanceof FirebaseNetworkException)
+        {
+            errorMessage = "Cannot connect to the network. Please check your connection.";
+        }
+        else
+        {
+            errorMessage = "Authentication failed. Please try again later.";
+        }
+        Toast.makeText(login_screen.this, errorMessage, Toast.LENGTH_LONG).show();
+    }
+
+
+    public void signUp(View view) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("state", hubCodes.SIGN_IN.ordinal());
+        setResult(Activity.RESULT_OK, resultIntent);
+        finish();
     }
 }

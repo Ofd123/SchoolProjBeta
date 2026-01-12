@@ -2,6 +2,7 @@ package com.example.schoolproj.screens;
 
 import static com.example.schoolproj.FireBaseFiles.FBRef.refAuth;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -33,12 +34,18 @@ import com.google.firebase.auth.FirebaseUser;
 public class signUp_screen extends MasterActivity {
     EditText nameED, emailED, passwordED;
     String userName, email, password;
-    Boolean rememberMe, termsOfSrvice;
+    CheckBox rememberMeCB, termsOfSrviceCB;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup_screen);
+        rememberMeCB = findViewById(R.id.rememberMeChecked);
+        termsOfSrviceCB = findViewById(R.id.termsOfSrviceChecked);
+        nameED = findViewById(R.id.nameED);
+        emailED = findViewById(R.id.emailED);
+        passwordED = findViewById(R.id.passwordED);
     }
 
     public Boolean connect() {
@@ -84,25 +91,8 @@ public class signUp_screen extends MasterActivity {
         }
     }
 
-    public void onRememberMeClicked(View view) {
-        if (rememberMe) {
-            rememberMe = false;
-        } else {
-            rememberMe = true;
-        }
-    }
-
-    public void onCheckboxClicked(View view) {
-        if (termsOfSrvice) {
-            termsOfSrvice = false;
-        } else {
-            termsOfSrvice = true;
-        }
-
-    }
-
     public void signUp(View view) {
-        if (termsOfSrvice)
+        if (termsOfSrviceCB.isChecked())
         {
             userName = nameED.getText().toString();
             email = emailED.getText().toString();
@@ -112,18 +102,21 @@ public class signUp_screen extends MasterActivity {
             }
             if (connect())
             {
-                if (rememberMe)
+                if (rememberMeCB.isChecked())
                 {
                     SharedPreferences.Editor editor = settings.edit();
-                    editor.putBoolean("rememberMe", rememberMe);
+                    editor.putBoolean("rememberMe", rememberMeCB.isChecked());
                     editor.putString("userID", connectedUser.getUserID());
                     editor.putString("username", connectedUser.getUsername());
                     editor.putLong("lastLogin", connectedUser.getLastLogin());
                     editor.putLong("creationDate", connectedUser.getCreationDate());
                     editor.apply();
                 }
-                Intent intent = new Intent(this, MainActivity.class);
-                startActivity(intent);
+
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("state", hubCodes.REMEMBER_ME.ordinal());
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
 
             }
         }
@@ -133,7 +126,9 @@ public class signUp_screen extends MasterActivity {
 
     public void logIn(View view)
     {
-        Intent intent = new Intent(this, login_screen.class);
-        startActivity(intent);
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("state", hubCodes.LOG_IN.ordinal());
+        setResult(Activity.RESULT_OK, resultIntent);
+        finish();
     }
 }

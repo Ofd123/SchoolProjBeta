@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFF"
+    android:background="#FFFFFF"
     android:orientation="vertical"
     tools:context=".screens.signUp_screen">
 
@@ -153,8 +153,8 @@
             android:layout_width="228dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:onClick="onRememberMeClicked"
-            android:text="remember me" />
+            android:text="remember me"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <Space
             android:layout_width="wrap_content"
@@ -178,8 +178,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:onClick="onCheckboxClicked"
-            android:text="I agree to the terms of service" />
+            android:text="I agree to the terms of service"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <Space
             android:layout_width="wrap_content"
@@ -208,10 +208,10 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="#FFFFF"
+            android:background="@color/white"
             android:gravity="top|left"
             android:onClick="logIn"
-            android:text="already have an account?"
+            android:text="@string/already_have_an_account"
             android:textColor="#2196F3" />
 
         <Space
