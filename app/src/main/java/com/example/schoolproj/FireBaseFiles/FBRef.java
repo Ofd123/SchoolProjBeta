@@ -9,11 +9,10 @@ public class FBRef
     public static FirebaseAuth refAuth = FirebaseAuth.getInstance();
 
     public static FirebaseDatabase FBDB = FirebaseDatabase.getInstance();
-//    public static DatabaseReference userRef = FBDB.getReference("User");
-//    public static DatabaseReference keyRef = FBDB.getReference("Key");
-    //    public static DatabaseReference GalleryImageRef = FBDB.getReference("GalleryImage");
-//    public static FirebaseStorage storage = FirebaseStorage.getInstance();
-//    public static StorageReference refStorage = storage.getReference();
+    public static DatabaseReference userRef = FBDB.getReference("User");
+    public static DatabaseReference searchHistoryRef = FBDB.getReference("SearchHistory");
+    public static DatabaseReference favoritesRef = FBDB.getReference("savedItems");
+
 
 
 }

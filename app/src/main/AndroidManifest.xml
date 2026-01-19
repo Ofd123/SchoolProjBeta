@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SchoolProj">
         <activity
+            android:name=".search_results_screen"
+            android:exported="false" />
+        <activity
+            android:name=".search_screen"
+            android:exported="false" />
+        <activity
             android:name=".screens.main_screen"
             android:exported="false" />
         <activity
