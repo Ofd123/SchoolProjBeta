@@ -1,68 +1,90 @@
 package com.example.schoolproj.classes;
 
-import android.os.Build;
-
-import java.security.Timestamp;
-import java.time.LocalDateTime;
+import android.graphics.Bitmap;
 
 public class SavedItems
 {
-    String search_id;
-    LocalDateTime search_date;
-    LocalDateTime delete_date;
-    String search_query;
+    String product_id;
+    String product_name;
+    float price;
+    Bitmap image;
+    String description;
+    String store_name;
+    String store_url;
+    String store_location;
 
-    public SavedItems(String search_id, String search_query, boolean compare_price)
+    public SavedItems(String product_id, String product_name, float price, String description, Bitmap image, String store_name, String store_url, String store_location)
     {
-        this.search_id = search_id;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-        {
-            this.search_date = LocalDateTime.now();
-            this.delete_date = LocalDateTime.now().plusWeeks(2); //delete after 2 weeks
-        }
-        this.search_query = search_query;
-        this.compare_price = compare_price;
+        this.product_id = product_id;
+        this.product_name = product_name;
+        this.price = price;
+        this.image = image;
+        this.description = description;
+        this.store_name = store_name;
+        this.store_url = store_url;
+        this.store_location = store_location;
     }
 
-    public String getSearch_id()
-    {
-        return search_id;
+    public String getProduct_id() {
+        return product_id;
     }
 
-    public LocalDateTime getSearch_date() {
-        return search_date;
+    public String getProduct_name() {
+        return product_name;
     }
 
-    public void setSearch_date(LocalDateTime search_date) {
-        this.search_date = search_date;
+    public void setProduct_name(String product_name) {
+        this.product_name = product_name;
     }
 
-    public LocalDateTime getDelete_date() {
-        return delete_date;
+    public float getPrice() {
+        return price;
     }
 
-    public void setDelete_date(LocalDateTime delete_date) {
-        this.delete_date = delete_date;
+    public void setPrice(float price) {
+        this.price = price;
     }
 
-    public String getSearch_query() {
-        return search_query;
+    public Bitmap getImage() {
+        return image;
     }
 
-    public void setSearch_query(String search_query) {
-        this.search_query = search_query;
+    public void setImage(Bitmap image) {
+        this.image = image;
     }
 
-    public boolean isCompare_price() {
-        return compare_price;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCompare_price(boolean compare_price) {
-        this.compare_price = compare_price;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getStore_name() {
+        return store_name;
+    }
+
+    public void setStore_name(String store_name) {
+        this.store_name = store_name;
+    }
+
+    public String getStore_url() {
+        return store_url;
+    }
+
+    public void setStore_url(String store_url) {
+        this.store_url = store_url;
+    }
+
+    public String getStore_location() {
+        return store_location;
+    }
+
+    public void setStore_location(String store_location) {
+        this.store_location = store_location;
     }
 
 
 
-    //file - search_result
-    boolean compare_price;
 }

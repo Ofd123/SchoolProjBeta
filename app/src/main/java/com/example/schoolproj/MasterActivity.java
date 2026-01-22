@@ -14,13 +14,20 @@ import org.json.JSONObject;
 
 public class MasterActivity extends AppCompatActivity
 {
-    protected enum hubCodes // when the user opens the app, the enum will take place in several classes depending on the user's logging state
+
+    protected enum Codes // when the user opens the app, the enum will take place in several classes depending on the user's logging state
     {
         ERROR, // something went wrong - put it just in case
         SIGN_IN,  // go to sign in screen
         LOG_IN,  // go to log in screen
         REMEMBER_ME, // connected - go to main screen
-        LOGGED_OUT // disconnected - go to sign in -> will help in future updates
+        LOGGED_OUT, // disconnected - go to sign in -> will help in future updates
+        MAIN_SCREEN_REQUEST_CODE,
+        SEARCH_REQUEST_CODE,
+        GALLERY_REQUEST_CODE,
+        CAMERA_REQUEST_CODE,
+        CAMERA_PERMISSION_CODE
+
     }
     protected SharedPreferences settings;
     protected User connectedUser;

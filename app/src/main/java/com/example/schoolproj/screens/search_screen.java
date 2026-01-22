@@ -1,9 +1,11 @@
-package com.example.schoolproj;
+package com.example.schoolproj.screens;
 
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.schoolproj.R;
 
 public class search_screen extends AppCompatActivity {
 

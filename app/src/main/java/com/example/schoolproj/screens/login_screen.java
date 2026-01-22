@@ -97,7 +97,7 @@ public class login_screen extends MasterActivity {
         }
 
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("state", hubCodes.REMEMBER_ME.ordinal());
+        resultIntent.putExtra("state", Codes.REMEMBER_ME.ordinal());
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }
@@ -127,7 +127,7 @@ public class login_screen extends MasterActivity {
 
     public void signUp(View view) {
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("state", hubCodes.SIGN_IN.ordinal());
+        resultIntent.putExtra("state", Codes.SIGN_IN.ordinal());
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }

@@ -9,15 +9,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.schoolproj.MainActivity;
 import com.example.schoolproj.MasterActivity;
 import com.example.schoolproj.R;
 import com.example.schoolproj.classes.User;
@@ -114,7 +111,7 @@ public class signUp_screen extends MasterActivity {
                 }
 
                 Intent resultIntent = new Intent();
-                resultIntent.putExtra("state", hubCodes.REMEMBER_ME.ordinal());
+                resultIntent.putExtra("state", Codes.REMEMBER_ME.ordinal());
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
 
@@ -127,7 +124,7 @@ public class signUp_screen extends MasterActivity {
     public void logIn(View view)
     {
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("state", hubCodes.LOG_IN.ordinal());
+        resultIntent.putExtra("state", Codes.LOG_IN.ordinal());
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }

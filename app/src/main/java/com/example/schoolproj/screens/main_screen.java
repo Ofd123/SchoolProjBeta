@@ -1,30 +1,32 @@
 package com.example.schoolproj.screens;
 
+import static android.content.ContentValues.TAG;
+import static com.example.schoolproj.GeminiRelevant.Prompts.GET_DATA_FROM_IMAGE;
+
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
+import com.example.schoolproj.GeminiRelevant.GeminiCallback;
+import com.example.schoolproj.GeminiRelevant.GeminiManager;
 import com.example.schoolproj.MasterActivity;
 import com.example.schoolproj.R;
 
 public class main_screen extends MasterActivity
 {
+    GeminiManager geminiManager;
 
-    private static final int CAMERA_REQUEST_CODE = 1;
-    private static final int CAMERA_PERMISSION_CODE = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -32,52 +34,157 @@ public class main_screen extends MasterActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
     }
-
+    // ---------------------------------------------------------------------------------------------
     public void regularSearch(View view)
     {
-
+        Intent intent = new Intent(this, search_screen.class);
+        startActivityForResult(intent, Codes.SEARCH_REQUEST_CODE.ordinal());
     }
-
+    // ---------------------------------------------------------------------------------------------
     public void imageSearch(View view)
     {
-        String[] options = {"Camera", "Gallery"};
+        try
+        {
+            String[] options = {"Camera", "Gallery"};
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Image Source");
-        builder.setItems(options, (dialog, which) -> {
-            switch (which) {
-                case 0:
-                    openCamera();
-                    break;
-                case 1:
-//                    openGallery();
-                    break;
-            }
-        });
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Select Image Source");
+            builder.setItems(options, (dialog, which) -> {
+                switch (which)
+                {
+                    case 0:
+                        openCamera();
+                        dialog.dismiss(); // might switch to cancel
+                    case 1:
+                        openGallery();
+                        dialog.dismiss();
+                }
+            });
 
-        builder.show();
+            // handle canceling the dialog
+            builder.setOnCancelListener(dialog -> {
+                Toast.makeText(main_screen.this, "Image selection cancelled.", Toast.LENGTH_SHORT).show();
+                throw new RuntimeException("Image selection cancelled.");
+            });
+            builder.create().show();
+
+
+        }
+        catch (Exception e)
+        {
+            Log.i("status:", e.toString());
+        }
     }
+    // ---------------------------------------------------------------------------------------------
     public void openCamera()
     {
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
-            return;
-        }
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, CAMERA_REQUEST_CODE);
-        } else {
+        if (intent.resolveActivity(getPackageManager()) != null)
+        {
+            startActivityForResult(intent, Codes.CAMERA_REQUEST_CODE.ordinal());
+        }
+        else
+        {
             Toast.makeText(this, "No camera app found.", Toast.LENGTH_SHORT).show();
         }
     }
+    // ---------------------------------------------------------------------------------------------
+    public void openGallery()
+    {
+        try
+        {
+            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(intent, Codes.GALLERY_REQUEST_CODE.ordinal());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i("Error", e.toString());
+        }
+    }
+    // ---------------------------------------------------------------------------------------------
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Bitmap imageBitmap = null;
+        // check camera result
+        if (resultCode == RESULT_OK && requestCode == Codes.CAMERA_REQUEST_CODE.ordinal())
+        {
+            if (data != null && data.getExtras() != null)
+            {
+                imageBitmap = (Bitmap) data.getExtras().get("data");
+            }
+            else
+            {
+                Toast.makeText(this, "No picture was sent.", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Image bitmap is null");
+                return;
+            }
+        }
+        // check gallery result
+        // i did not combine it with the camerra because i might implement the ability to share several images from the gallery while you can only take 1 picture from the camera at a time
+        else if (requestCode == Codes.GALLERY_REQUEST_CODE.ordinal() && resultCode == RESULT_OK && data != null)
+        {
+            if (data != null && data.getExtras() != null)
+            {
+                imageBitmap = (Bitmap) data.getExtras().get("data");
+            }
+            else
+            {
+                Toast.makeText(this, "No image captured.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+        else
+        {
+            Toast.makeText(this, "No Image Selected", Toast.LENGTH_SHORT).show();
+        }
+
+        // analyze with gemini
+        if (imageBitmap != null)
+        {
+            ProgressDialog pd = new ProgressDialog(this);
+            pd.setTitle("Analyzing Image...");
+            pd.show();
+
+            String prompt = GET_DATA_FROM_IMAGE;
+            geminiManager.sendTextWithPhotoPrompt(prompt, imageBitmap, new GeminiCallback() {
+                @Override
+                public void onSuccess(String result)
+                {
+                    pd.dismiss();
+                }
+
+                @Override
+                public void onFailure(Throwable error) {
+                    pd.dismiss();
+                    Log.e(TAG, "onActivityResult/Error: " + error.getMessage());
+                }
+            });
+        }
+        else
+        {
+            Toast.makeText(this, "No picture was sent.", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Intent data or extras are null");
+        }
+    }
+    // ---------------------------------------------------------------------------------------------
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == Codes.CAMERA_PERMISSION_CODE.ordinal())
+        {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
                 openCamera();
-            } else {
+            }
+            else
+            {
                 Toast.makeText(this, "Camera permission denied.", Toast.LENGTH_SHORT).show();
             }
         }
